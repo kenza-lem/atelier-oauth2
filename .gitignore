@@ -1,0 +1,14 @@
+# Node / React
+node_modules/
+dist/
+
+# Maven / Spring Boot
+target/
+
+# IntelliJ et VS Code
+.idea/
+*.iml
+.vscode/
+
+# Secrets
+.env
