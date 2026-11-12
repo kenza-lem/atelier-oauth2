@@ -18,6 +18,9 @@ export default function App() {
   const [message, setMessage] =
     useState('');
 
+  const [profil, setProfil] =
+    useState(null);
+
   const roles =
     keycloak.tokenParsed?.realm_access?.roles || [];
 
@@ -49,7 +52,22 @@ export default function App() {
     }
   }
 
+  async function chargerProfil() {
+
+    try {
+
+      setProfil(
+        await appelerApi('/api/profil')
+      );
+
+    } catch (e) {
+
+      setMessage('Erreur : ' + e.message);
+    }
+  }
+
   useEffect(() => {
+    chargerProfil();
     charger();
   }, []);
 
@@ -78,7 +96,7 @@ export default function App() {
     }
   }
 
-  async function valider(id) {
+  async function changerStatut(id, statut) {
 
     try {
 
@@ -88,12 +106,16 @@ export default function App() {
           method: 'PATCH',
 
           body: JSON.stringify({
-            statut: 'VALIDEE'
+            statut: statut
           })
         }
       );
 
-      setMessage('Demande validee.');
+      setMessage(
+        statut === 'VALIDEE'
+          ? 'Demande validee.'
+          : 'Demande refusee.'
+      );
 
       await charger();
 
@@ -119,6 +141,15 @@ export default function App() {
         <p>
           Roles : {roles.join(', ')}
         </p>
+
+        {profil && (
+          <p>
+            Profil (API) : identifiant
+            <strong> {profil.id}</strong>
+            , nom d'utilisateur
+            <strong> {profil.username ?? '-'}</strong>
+          </p>
+        )}
 
         <button onClick={() =>
           keycloak.logout({
@@ -191,13 +222,21 @@ export default function App() {
                 #{d.id} - {d.objet}
                 ({d.statut})
 
-                {d.statut !== 'VALIDEE' && (
+                {d.statut === 'EN_ATTENTE' && (
 
-                  <button
-                    onClick={() => valider(d.id)}
-                  >
-                    Valider
-                  </button>
+                  <>
+                    <button
+                      onClick={() => changerStatut(d.id, 'VALIDEE')}
+                    >
+                      Valider
+                    </button>
+
+                    <button
+                      onClick={() => changerStatut(d.id, 'REFUSEE')}
+                    >
+                      Refuser
+                    </button>
+                  </>
 
                 )}
 

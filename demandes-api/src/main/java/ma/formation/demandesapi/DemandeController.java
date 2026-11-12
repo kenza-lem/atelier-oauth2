@@ -1,6 +1,7 @@
 package ma.formation.demandesapi;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -43,6 +44,18 @@ public class DemandeController {
             "message",
             "API publique accessible"
         );
+    }
+
+    @GetMapping("/api/profil")
+    public Map<String, String> profil(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        // LinkedHashMap accepte null si preferred_username est absent du JWT
+        Map<String, String> profil = new LinkedHashMap<>();
+        profil.put("id", jwt.getSubject());
+        profil.put("username", jwt.getClaimAsString("preferred_username"));
+
+        return profil;
     }
 
     @GetMapping("/api/demandes")
